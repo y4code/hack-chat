@@ -3,6 +3,7 @@ FROM golang:1.13 AS builder
 WORKDIR /usr/src/app
 
 COPY . .
+
 RUN go build -v -o app
 
 FROM buildpack-deps:jessie
