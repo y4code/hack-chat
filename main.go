@@ -1,9 +1,9 @@
-package main
+// package main
 
-import (
-	"log"
-	"net/http"
-)
+// import (
+// 	"log"
+// 	"net/http"
+// )
 
 // func serveHome(w http.ResponseWriter, r *http.Request) {
 // 	log.Println(r.URL)
@@ -19,21 +19,31 @@ import (
 // 	http.ServeFile(w, r, "./static/home.html")
 // }
 
-func main() {
-	// flag.Parse()
-	// hub := newHub()
-	// go hub.run()
+package main
 
-	fs := http.FileServer(http.Dir("static/"))
-	http.Handle("/", fs)
+import (
+	"fmt"
+	"net/http"
+)
 
-	http.Handle("/jing/", http.StripPrefix("/jing/", fs))
+func hello(w http.ResponseWriter, req *http.Request) {
 
-	// http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-	// 	serveWs(hub, w, r)
-	// })
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		log.Fatal("ListenAndServe", err)
+	fmt.Fprintf(w, "hello\n")
+}
+
+func headers(w http.ResponseWriter, req *http.Request) {
+
+	for name, headers := range req.Header {
+		for _, h := range headers {
+			fmt.Fprintf(w, "%v: %v\n", name, h)
+		}
 	}
+}
+
+func main() {
+
+	http.HandleFunc("/hello", hello)
+	http.HandleFunc("/headers", headers)
+
+	http.ListenAndServe(":8080", nil)
 }
