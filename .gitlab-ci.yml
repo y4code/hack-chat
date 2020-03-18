@@ -7,7 +7,7 @@ docker-build-master:
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$(date)" .
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$(date +"%Y-%m-%d-%H-%M-%S")" .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
     - master
