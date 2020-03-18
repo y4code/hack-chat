@@ -26,7 +26,8 @@ func main() {
 	go hub.run()
 
 	fs := http.FileServer(http.Dir("./static"))
-	http.Handle("/", http.StripPrefix("/", fs))
+	http.Handle("/", fs)
+
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
