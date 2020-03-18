@@ -11,6 +11,7 @@ FROM buildpack-deps:jessie
 WORKDIR /usr/local/bin
 
 COPY --from=builder /usr/src/app/app .
+COPY static ./static
 
 EXPOSE 8080
 

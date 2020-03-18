@@ -1,9 +1,10 @@
-// package main
+package main
 
-// import (
-// 	"log"
-// 	"net/http"
-// )
+import (
+	"flag"
+	"log"
+	"net/http"
+)
 
 // func serveHome(w http.ResponseWriter, r *http.Request) {
 // 	log.Println(r.URL)
@@ -16,33 +17,19 @@
 // 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 // 		return
 // 	}
-// 	http.ServeFile(w, r, "./static/home.html")
+// 	http.ServeFile(w, r, "static/home.html")
 // }
 
-package main
-
-import (
-	"fmt"
-	"net/http"
-)
-
-func hello(w http.ResponseWriter, req *http.Request) {
-	http.ServeFile(w, req, "home.html")
-}
-
-func headers(w http.ResponseWriter, req *http.Request) {
-
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
-	}
-}
-
 func main() {
-
-	http.HandleFunc("/static", hello)
-	http.HandleFunc("/headers", headers)
-
-	http.ListenAndServe(":8080", nil)
+	flag.Parse()
+	hub := newHub()
+	go hub.run()
+	http.Handle("/", http.FileServer(http.Dir("static")))
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(hub, w, r)
+	})
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe", err)
+	}
 }
