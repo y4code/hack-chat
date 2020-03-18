@@ -27,8 +27,7 @@ import (
 )
 
 func hello(w http.ResponseWriter, req *http.Request) {
-
-	fmt.Fprintf(w, "hello\n")
+	http.ServeFile(w, req, "home.html")
 }
 
 func headers(w http.ResponseWriter, req *http.Request) {
@@ -42,7 +41,7 @@ func headers(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 
-	http.HandleFunc("/hello", hello)
+	http.HandleFunc("/static", hello)
 	http.HandleFunc("/headers", headers)
 
 	http.ListenAndServe(":8080", nil)
