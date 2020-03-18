@@ -27,7 +27,6 @@ func main() {
 	fs := http.FileServer(http.Dir("static/"))
 	http.Handle("/", fs)
 
-	http.Handle("/", fs)
 	http.Handle("/jing/", http.StripPrefix("/jing/", fs))
 
 	// http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
