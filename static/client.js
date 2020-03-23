@@ -337,6 +337,7 @@ function join(channel) {
 	}
 
 	ws.onmessage = function (message) {
+		console.log(message)
 		var args = JSON.parse(message.data);
 		var cmd = args.cmd;
 		var command = COMMANDS[cmd];

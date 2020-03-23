@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,9 +21,8 @@ import (
 // }
 
 func main() {
-	flag.Parse()
 	hub := newHub()
-	go hub.run()
+	//go hub.run()
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	// TODO https://hack.chat/?your-channel
 	//URL query param
