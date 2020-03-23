@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -25,10 +26,14 @@ func main() {
 	hub := newHub()
 	go hub.run()
 	http.Handle("/", http.FileServer(http.Dir("static")))
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	// TODO https://hack.chat/?your-channel
+	//URL query param
+	//all the params behind host is supposed to be split joint a particular channel
+	http.HandleFunc("/chat-ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
-	err := http.ListenAndServe(":8080", nil)
+	fmt.Println("Listen on 6060")
+	err := http.ListenAndServe(":6060", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe", err)
 	}
