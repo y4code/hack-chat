@@ -30,8 +30,8 @@ func main() {
 	http.HandleFunc("/chat-ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
-	fmt.Println("Listen on 6060")
-	err := http.ListenAndServe(":6060", nil)
+	fmt.Println("Listen on 8080")
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe", err)
 	}
