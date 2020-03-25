@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -69,6 +70,7 @@ func (c *Client) readPump() {
 	for {
 		// 读取ws消息
 		_, message, err := c.conn.ReadMessage()
+		fmt.Println(string(message))
 
 		if err != nil {
 			// ws 1001 1006 是否为预期中的错误，不是的话，print
@@ -125,20 +127,10 @@ func (c *Client) writePump() {
 	}
 }
 
-func getRoom(hub *Hub, r *http.Request) *Room {
-	// 没房的话，就去开房
-	// TODO use query param as the primary key
-	if _, ok := hub.rooms[r.URL.Path]; !ok {
-		nRoom := newRoom()
-		//第一次开房先要初始化房间
-		go nRoom.run()
-		// TODO set room in gouroutine maybe a better perfomance
-		hub.rooms[r.URL.Path] = nRoom
-		return nRoom
-	} else {
-		//有房的话，给房卡
-		return hub.rooms[r.URL.Path]
-	}
+type CanNotGetRoomNumber string
+
+func (e CanNotGetRoomNumber) Error() string {
+	return "Can not get room number"
 }
 
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
@@ -157,7 +149,6 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		send: make(chan []byte, 256),
 	}
 
-
 	//client.hub.rooms[r.URL.Path].register <- client
 	//房间入住客人，这里上下两行皆可
 	client.room.register <- client
@@ -165,4 +156,34 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// 在新的协程中完成所有工作 以允许(调用者)引用一些内存
 	go client.writePump()
 	go client.readPump()
+}
+
+func getRoom(hub *Hub, r *http.Request) *Room {
+	roomNumber, e := getRoomNumber(hub, r)
+	if e != nil {
+		fmt.Println(e)
+	}
+
+	// 有房的话，返回房间；没房的话，新建房间
+	if _, ok := hub.rooms[roomNumber]; !ok {
+		nRoom := newRoom()
+		//第一次开房先要初始化房间
+		go nRoom.run()
+		// TODO set room in gouroutine maybe a better perfomance
+		hub.rooms[roomNumber] = nRoom
+		return nRoom
+	} else {
+		//有房的话，给房卡
+		return hub.rooms[roomNumber]
+	}
+}
+
+func getRoomNumber(hub *Hub, r *http.Request) (string, error) {
+	if err := r.ParseForm(); err != nil {
+		log.Println(err)
+		return "", CanNotGetRoomNumber("")
+	}
+	roomNumber := r.Form.Get("channel")
+	fmt.Println(roomNumber)
+	return roomNumber, nil
 }

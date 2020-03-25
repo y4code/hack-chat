@@ -301,9 +301,9 @@ function join(channel) {
 	if (document.location
 		&& document.location.host
 		&& document.location.host.startsWith('localhost')) {
-		ws = new WebSocket('ws://' + document.location.host + '/chat-ws')
+		ws = new WebSocket('ws://' + document.location.host + '/chat-ws?channel=' + channel)
 	} else {
-		ws = new WebSocket('wss://' + document.location.host + '/chat-ws');
+		ws = new WebSocket('wss://' + document.location.host + '/chat-ws?channel=' + channel)
 	}
 
 	var wasConnected = false;
