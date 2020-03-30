@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -39,7 +40,11 @@ var upgrader = websocket.Upgrader{
 
 // Client 是在 websocket 连接和 Hub 之间的中间人
 type Client struct {
-	hub  *Hub
+	hub *Hub
+
+	nick string
+
+	//use room in case of confuse with channel which as go type
 	room *Room
 
 	// websocket 连接
@@ -71,6 +76,13 @@ func (c *Client) readPump() {
 		// 读取ws消息
 		_, message, err := c.conn.ReadMessage()
 		fmt.Println(string(message))
+
+		// save nick name to return a json containing property "nick"
+		var msg Message
+		json.Unmarshal([]byte(string(message)), &msg)
+		if msg.Cmd == "join" && len(msg.Nick) > 0 {
+			c.nick = msg.Nick
+		}
 
 		if err != nil {
 			// ws 1001 1006 是否为预期中的错误，不是的话，print
@@ -105,6 +117,10 @@ func (c *Client) writePump() {
 			if err != nil {
 				return
 			}
+			fmt.Println(message)
+
+			addPropertyToMessage(c.nick, &message)
+
 			w.Write(message)
 
 			n := len(c.send)
@@ -127,6 +143,23 @@ func (c *Client) writePump() {
 	}
 }
 
+func addPropertyToMessage(property string, message *[]byte) {
+
+	var joinMsg JoinMessage
+	var chatMsg ChatMessage
+	json.Unmarshal([]byte(string(*message)), &joinMsg)
+	json.Unmarshal([]byte(string(*message)), &chatMsg)
+	joinMsg.Nick = property
+	chatMsg.Nick = property
+	// TODO 需要优化
+	if joinMsg.Cmd == "chat" {
+		*message, _ = json.Marshal(chatMsg)
+	} else {
+		*message, _ = json.Marshal(joinMsg)
+	}
+	fmt.Println("msg 是", string(*message))
+}
+
 type CanNotGetRoomNumber string
 
 func (e CanNotGetRoomNumber) Error() string {
@@ -144,6 +177,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	//新建一个 client
 	client := &Client{
 		hub:  hub,
+		nick: "",
 		room: getRoom(hub, r),
 		conn: conn,
 		send: make(chan []byte, 256),
