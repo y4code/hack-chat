@@ -1,3 +1,4 @@
 # hack-chat
 
-hack-chat implementation in Go
+hack-chat(https://hack.chat/) implementation in Go
+
